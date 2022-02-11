@@ -13,7 +13,7 @@ run the following commands in your terminal:
 
 ```pip install asyncio```
 ## Using the bot
-open the bot.py file and paste your bot token on the last line
+open the bot.py file and paste your bot token inside the bot.run() command
 
 to run the bot use the following command:
 
