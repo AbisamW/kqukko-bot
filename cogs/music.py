@@ -20,21 +20,16 @@ class Player(commands.Cog):
 
     async def check_queue(self, ctx):
         global stopped
-        if ctx.voice_client.is_paused():
-            await ctx.voice_client.disconnect()
-            del (self.song_queue[ctx.guild.id])[:]
-            return await ctx.send("Paused for too long, leaving voice channel.")
-
         if len(self.song_queue[ctx.guild.id]) > 0:
             song = self.song_queue[ctx.guild.id][0]
             self.song_queue[ctx.guild.id].pop(0)
             await self.play_song(ctx, song)
-            
+        
         elif not stopped:
             await ctx.voice_client.disconnect()
             del (self.song_queue[ctx.guild.id])[:]
             return await ctx.send("Song queue is empty, disconnecting.")
-
+        
     async def search_song(self, amount, song, get_url=False):
         info = await self.bot.loop.run_in_executor(None, lambda: youtube_dl.YoutubeDL(YOUTUBEDL_OPTIONS).extract_info(f"ytsearch{amount}:{song}", download=False, ie_key="YoutubeSearch"))
         if len(info["entries"]) == 0: return None
@@ -48,10 +43,9 @@ class Player(commands.Cog):
             url = ydl.extract_info(song, download=False)
         url2 = url['formats'][0]['url']
         source = await discord.FFmpegOpusAudio.from_probe(url2, **FFMPEG_OPTIONS)
-        ctx.voice_client.play(source)
+        ctx.voice_client.play(source, after=lambda error: self.bot.loop.create_task(self.check_queue(ctx)))
         await ctx.send(f"Now playing: {song}")
-        await asyncio.sleep(url['duration'])
-        await self.check_queue(ctx)
+
 
     @commands.command(brief = "Disconnects the bot from the voice channel")
     async def stop(self, ctx):
@@ -144,7 +138,6 @@ class Player(commands.Cog):
             return await ctx.send("You're not in the same voice channel as the bot")
 
         ctx.voice_client.stop()
-        await self.check_queue(ctx)
 
     @commands.command(brief = "Pauses the song")
     async def pause(self, ctx):
