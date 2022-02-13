@@ -72,7 +72,7 @@ class Player(commands.Cog):
             await ctx.author.voice.channel.connect()
         
         if not ("youtube.com/watch?" in song or "https://youtu.be/" in song):
-            await ctx.send(f"searching for {song}...")
+            await ctx.send(f'searching for "{song}"...')
 
             result = await self.search_song(1, song, get_url=True)
 
@@ -97,7 +97,7 @@ class Player(commands.Cog):
     async def search(self, ctx, *, song=None):
         if song is None: return await ctx.send("No song name or url given.")
 
-        await ctx.send(f'Searching for "{song}"')
+        await ctx.send(f'Searching for "{song}"...')
 
         info = await self.search_song(5, song)
 
